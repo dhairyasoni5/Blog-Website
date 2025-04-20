@@ -4,7 +4,7 @@ import { API_NOTIFICATION_MESSAGES, SERVICE_URLS } from '../constants/config';
 import { getAccessToken, getRefreshToken, setAccessToken, getType } from '../utils/common-utils';
 
 // Use environment variable or default to the deployed backend
-const API_URL = process.env.REACT_APP_API_URL || 'https://minimal-blog-api.onrender.com';
+const API_URL = process.env.REACT_APP_API_URL || 'https://blog-api-veo0.onrender.com';
 
 // Add check for server availability
 console.log('API configured with URL:', API_URL);
