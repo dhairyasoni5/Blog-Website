@@ -13,10 +13,14 @@ console.log('API configured with URL:', API_URL);
 try {
   fetch(API_URL)
     .then(response => {
+      if (!response.ok) {
+        throw new Error(`Server returned ${response.status}`);
+      }
       console.log('Server connection test successful, status:', response.status);
     })
     .catch(error => {
       console.error('Server connection test failed:', error.message);
+      // Don't block the app from loading if the server is down
     });
 } catch (error) {
   console.error('Connection test threw an exception:', error.message);
@@ -34,6 +38,11 @@ const axiosInstance = axios.create({
 // Add request interceptor for better error handling
 axiosInstance.interceptors.request.use(
     function(config) {
+        // Skip logging for manifest.json requests
+        if (config.url.includes('manifest.json')) {
+            return config;
+        }
+        
         // Log request details for debugging
         console.log('Making request to:', config.url);
         console.log('Request method:', config.method);
@@ -55,10 +64,20 @@ axiosInstance.interceptors.request.use(
 // Add response interceptor for better error handling
 axiosInstance.interceptors.response.use(
     function(response) {
+        // Skip logging for manifest.json responses
+        if (response.config.url.includes('manifest.json')) {
+            return response;
+        }
+        
         console.log('Response received:', response.status);
         return processResponse(response);
     },
     function(error) {
+        // Skip logging for manifest.json errors
+        if (error.config?.url?.includes('manifest.json')) {
+            return Promise.reject(error);
+        }
+        
         console.error('Response error:', error);
         return Promise.reject(ProcessError(error));
     }
@@ -94,6 +113,15 @@ const ProcessError = async (error) => {
         console.log("ERROR RESPONSE DATA:", error.response.data);
         console.log("ERROR STATUS:", error.response.status);
         console.log("ERROR HEADERS:", error.response.headers);
+        
+        // Handle CORS errors specifically
+        if (error.response.status === 0) {
+            return {
+                isError: true,
+                msg: 'CORS error: Unable to connect to the server. Please check if the server is running and accessible.',
+                code: 0
+            };
+        }
         
         // Handle 201 successful creation status (not actually an error)
         if (error.response?.status === 201) {
