@@ -22,20 +22,11 @@ app.use(helmet());
 
 // CORS configuration
 app.use(cors({
-  origin: (origin, callback) => {
-    const allowedOrigins = [
-      process.env.CLIENT_URL || 'http://localhost:3000',
-      'https://blog-website-frontend-1p44tec56-dhairyasoni5s-projects.vercel.app', // Your new Vercel domain
-      undefined // Allow requests with no origin (like mobile apps or curl requests)
-    ];
-    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true
+  origin: '*', // Allow all origins during development
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  credentials: true,
+  maxAge: 86400 // Cache preflight request for 24 hours
 }));
 
 // Request parsing

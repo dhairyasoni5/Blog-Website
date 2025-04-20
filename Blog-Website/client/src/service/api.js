@@ -24,10 +24,11 @@ try {
 
 const axiosInstance = axios.create({
     baseURL: API_URL,
-    timeout: 10000, 
+    timeout: 10000,
     headers: {
         "content-type": "application/json"
-    }
+    },
+    withCredentials: true // Enable sending cookies with requests
 });
 
 axiosInstance.interceptors.request.use(
