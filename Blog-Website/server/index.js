@@ -28,6 +28,10 @@ const allowedOrigins = [
 
 // Add logging middleware
 app.use((req, res, next) => {
+  // Skip authentication for manifest.json and health check
+  if (req.path === '/manifest.json' || req.path === '/api/health') {
+    return next();
+  }
   console.log('Incoming request:', {
     method: req.method,
     origin: req.headers.origin,
@@ -83,6 +87,30 @@ app.use((err, req, res, next) => {
 app.use(bodyParser.json({ extended: true }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/', Router);
+
+// Add health check endpoint
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
+// Add route for manifest.json
+app.get('/manifest.json', (req, res) => {
+  res.json({
+    "short_name": "Blog Website",
+    "name": "Blog Website",
+    "icons": [
+      {
+        "src": "favicon.ico",
+        "sizes": "64x64 32x32 24x24 16x16",
+        "type": "image/x-icon"
+      }
+    ],
+    "start_url": ".",
+    "display": "standalone",
+    "theme_color": "#000000",
+    "background_color": "#ffffff"
+  });
+});
 
 const PORT = process.env.PORT || 8000;
 

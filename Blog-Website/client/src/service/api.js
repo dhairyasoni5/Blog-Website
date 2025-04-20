@@ -11,7 +11,7 @@ console.log('API configured with URL:', API_URL);
 
 // Test server connection on startup - wrapped in try/catch to prevent blocking rendering
 try {
-  fetch(API_URL)
+  fetch(`${API_URL}/api/health`)  // Use a health check endpoint instead of root
     .then(response => {
       if (!response.ok) {
         throw new Error(`Server returned ${response.status}`);
