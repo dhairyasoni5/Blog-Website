@@ -22,7 +22,7 @@ app.use(helmet());
 
 // CORS configuration
 app.use(cors({
-  origin: '*', // Allow all origins during development
+  origin: process.env.CLIENT_URL || 'https://blog-website-client.vercel.app',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   credentials: true,

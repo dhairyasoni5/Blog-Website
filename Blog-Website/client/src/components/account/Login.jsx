@@ -219,8 +219,16 @@ const Login = ({ isUserAuthenticated }) => {
     
     setIsLoading(true);
     try {
+      console.log('Attempting login with:', {
+        username: login.username,
+        passwordLength: login.password.length
+      });
+      
       let response = await API.userLogin(login);
+      console.log('Login response:', response);
+      
       if (response.isSuccess) {
+        console.log('Login successful, storing tokens');
         sessionStorage.setItem('accessToken', `Bearer ${response.data.accessToken}`);
         sessionStorage.setItem('refreshToken', `Bearer ${response.data.refreshToken}`);
         setAccount({ name: response.data.name, username: response.data.username });
@@ -229,15 +237,27 @@ const Login = ({ isUserAuthenticated }) => {
         setLogin(loginInitialValues);
         navigate('/');
       } else {
+        console.error('Login failed:', response);
         setError({ 
           show: true, 
           message: response.msg || 'Invalid username or password. Please try again.' 
         });
       }
     } catch (err) {
+      console.error('Login error:', err);
+      let errorMessage = 'An error occurred. Please try again later.';
+      
+      if (err.code === 429) {
+        errorMessage = 'Too many login attempts. Please try again after 15 minutes.';
+      } else if (err.code === 403) {
+        errorMessage = 'Session expired. Please login again.';
+      } else if (err.code === 401) {
+        errorMessage = 'Invalid username or password. Please try again.';
+      }
+      
       setError({ 
         show: true, 
-        message: 'An error occurred. Please try again later.' 
+        message: errorMessage
       });
     } finally {
       setIsLoading(false);

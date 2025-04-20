@@ -31,8 +31,14 @@ const axiosInstance = axios.create({
     withCredentials: true // Enable sending cookies with requests
 });
 
+// Add request interceptor for better error handling
 axiosInstance.interceptors.request.use(
     function(config) {
+        // Log request details for debugging
+        console.log('Making request to:', config.url);
+        console.log('Request method:', config.method);
+        console.log('Request headers:', config.headers);
+        
         if (config.TYPE.params) {
             config.params = config.TYPE.params
         } else if (config.TYPE.query) {
@@ -41,20 +47,22 @@ axiosInstance.interceptors.request.use(
         return config;
     },
     function(error) {
+        console.error('Request error:', error);
         return Promise.reject(error);
     }
 );
 
+// Add response interceptor for better error handling
 axiosInstance.interceptors.response.use(
     function(response) {
-        // Stop global loader here
+        console.log('Response received:', response.status);
         return processResponse(response);
     },
     function(error) {
-        // Stop global loader here
+        console.error('Response error:', error);
         return Promise.reject(ProcessError(error));
     }
-)
+);
 
 ///////////////////////////////
 // If success -> returns { isSuccess: true, data: object }
@@ -78,6 +86,8 @@ const processResponse = (response) => {
 // If fail -> returns { isError: true, status: string, msg: string, code: int }
 //////////////////////////////
 const ProcessError = async (error) => {
+    console.log('API Error:', error);
+    
     if (error.response) {
         // Request made and server responded with a status code 
         // that falls out of the range of 2xx
@@ -109,7 +119,7 @@ const ProcessError = async (error) => {
         }
     } else if (error.request) { 
         // The request was made but no response was received
-        console.log("ERROR IN RESPONSE: ", error.toJSON());
+        console.log("ERROR IN REQUEST: ", error.toJSON());
         return {
             isError: true,
             msg: API_NOTIFICATION_MESSAGES.requestFailure,
@@ -117,7 +127,7 @@ const ProcessError = async (error) => {
         }
     } else { 
         // Something happened in setting up the request that triggered an Error
-        console.log("ERROR IN RESPONSE: ", error.toJSON());
+        console.log("ERROR IN SETUP: ", error.toJSON());
         return {
             isError: true,
             msg: API_NOTIFICATION_MESSAGES.networkError,
