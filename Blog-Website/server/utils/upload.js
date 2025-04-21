@@ -7,6 +7,7 @@ dotenv.config();
 
 if (!process.env.DATABASE_URL) {
     console.error('DATABASE_URL environment variable is not set');
+    throw new Error('DATABASE_URL is required');
 }
 
 const storage = new GridFsStorage({
@@ -16,7 +17,8 @@ const storage = new GridFsStorage({
         const match = ["image/png", "image/jpg", "image/jpeg"];
         
         if (!file.mimetype || match.indexOf(file.mimetype) === -1) {
-            return `${Date.now()}-blog-${file.originalname}`;
+            // Reject the file if type doesn't match
+            return null;
         }
 
         return {
@@ -26,4 +28,20 @@ const storage = new GridFsStorage({
     }
 });
 
-export default multer({storage}); 
+// Create multer instance with error handling
+const upload = multer({ 
+    storage,
+    limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB limit
+    },
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = ["image/png", "image/jpg", "image/jpeg"];
+        if (allowedTypes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Invalid file type. Only PNG, JPG, and JPEG are allowed.'));
+        }
+    }
+});
+
+export default upload; 
